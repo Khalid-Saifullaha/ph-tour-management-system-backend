@@ -1,10 +1,10 @@
+import bcryptjs from "bcryptjs";
+import httpStatus from "http-status-codes";
+import { JwtPayload } from "jsonwebtoken";
+import { envVars } from "../../config/env";
 import AppError from "../../errorHelpers/appError";
 import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
-import httpStatus from "http-status-codes";
-import bcryptjs from "bcryptjs";
-import { envVars } from "../../config/env";
-import { JwtPayload } from "jsonwebtoken";
 
 const createUser = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload;
@@ -12,10 +12,10 @@ const createUser = async (payload: Partial<IUser>) => {
   const isUserExist = await User.findOne({ email });
 
   if (isUserExist) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Use Already Exist");
+    throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist");
   }
 
-  const hashePassword = await bcryptjs.hash(
+  const hashedPassword = await bcryptjs.hash(
     password as string,
     Number(envVars.BCRYPT_SALT_ROUND)
   );
@@ -27,7 +27,7 @@ const createUser = async (payload: Partial<IUser>) => {
 
   const user = await User.create({
     email,
-    password: hashePassword,
+    password: hashedPassword,
     auths: [authProvider],
     ...rest,
   });
